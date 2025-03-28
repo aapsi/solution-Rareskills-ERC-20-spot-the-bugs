@@ -2,29 +2,40 @@
 
 /// ██████╗ ██╗  ██╗ █████╗ ██╗     ██╗     ███████╗███╗   ██╗ ██████╗ ███████╗
 /// ██╔════╝██║  ██║██╔══██╗██║     ██║     ██╔════╝████╗  ██║██╔════╝ ██╔════╝
-/// ██║     ███████║███████║██║     ██║     █████╗  ██╔██╗ ██║██║  ███╗█████╗  
-/// ██║     ██╔══██║██╔══██║██║     ██║     ██╔══╝  ██║╚██╗██║██║   ██║██╔══╝  
+/// ██║     ███████║███████║██║     ██║     █████╗  ██╔██╗ ██║██║  ███╗█████╗
+/// ██║     ██╔══██║██╔══██║██║     ██║     ██╔══╝  ██║╚██╗██║██║   ██║██╔══╝
 /// ╚██████╗██║  ██║██║  ██║███████╗███████╗███████╗██║ ╚████║╚██████╔╝███████╗
 /// ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
-                                                                           
-///  ██████╗  █████╗                                                           
-/// ██╔═████╗██╔══██╗                                                          
-/// ██║██╔██║╚█████╔╝                                                          
-/// ████╔╝██║██╔══██╗                                                          
-/// ╚██████╔╝╚█████╔╝                                                          
-///  ╚═════╝  ╚════╝                                                           
-                                                                           
+
+///  ██████╗  █████╗
+/// ██╔═████╗██╔══██╗
+/// ██║██╔██║╚█████╔╝
+/// ████╔╝██║██╔══██╗
+/// ╚██████╔╝╚█████╔╝
+///  ╚═════╝  ╚════╝
+
 pragma solidity ^0.8.20;
 
 contract Challenge08 {
-
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 
-    error ERC20InsufficientBalance(address sender, uint256 balance, uint256 needed);
+    error ERC20InsufficientBalance(
+        address sender,
+        uint256 balance,
+        uint256 needed
+    );
     error ERC20InvalidSender(address sender);
     error ERC20InvalidReceiver(address receiver);
-    error ERC20InsufficientAllowance(address spender, uint256 allowance, uint256 needed);
+    error ERC20InsufficientAllowance(
+        address spender,
+        uint256 allowance,
+        uint256 needed
+    );
     error ERC20InvalidApprover(address approver);
     error ERC20InvalidSpender(address spender);
 
@@ -62,7 +73,10 @@ contract Challenge08 {
         return _balances[account];
     }
 
-    function allowance(address tokenOwner, address spender) public view returns (uint256) {
+    function allowance(
+        address tokenOwner,
+        address spender
+    ) public view returns (uint256) {
         return _allowances[tokenOwner][spender];
     }
 
@@ -76,14 +90,25 @@ contract Challenge08 {
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 value) public returns (bool) {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 value
+    ) public returns (bool) {
         _spendAllowance(from, msg.sender, value);
         _transfer(from, to, value);
         return true;
     }
 
     function burn(uint256 value) public {
+        if (value > _balances[msg.sender])
+            revert ERC20InsufficientBalance(
+                msg.sender,
+                _balances[msg.sender],
+                value
+            );
         _balances[msg.sender] -= value;
+        _totalSupply -= value;
         emit Transfer(msg.sender, address(0), value);
     }
 
@@ -92,24 +117,37 @@ contract Challenge08 {
         if (to == address(0)) revert ERC20InvalidReceiver(to);
 
         uint256 fromBalance = _balances[from];
-        if (fromBalance < value) revert ERC20InsufficientBalance(from, fromBalance, value);
+        if (fromBalance < value)
+            revert ERC20InsufficientBalance(from, fromBalance, value);
 
         _balances[from] = fromBalance - value;
         _balances[to] += value;
         emit Transfer(from, to, value);
     }
 
-    function _approve(address tokenOwner, address spender, uint256 value) internal {
+    function _approve(
+        address tokenOwner,
+        address spender,
+        uint256 value
+    ) internal {
         if (tokenOwner == address(0)) revert ERC20InvalidApprover(tokenOwner);
         if (spender == address(0)) revert ERC20InvalidSpender(spender);
 
         _allowances[tokenOwner][spender] = value;
+        emit Approval(tokenOwner, spender, value);
     }
 
-    function _spendAllowance(address tokenOwner, address spender, uint256 value) internal {
+    function _spendAllowance(
+        address tokenOwner,
+        address spender,
+        uint256 value
+    ) internal {
         uint256 currentAllowance = allowance(tokenOwner, spender);
         if (currentAllowance != type(uint256).max) {
-            require(currentAllowance >= value, "Challenge08: insufficient allowance");
+            require(
+                currentAllowance >= value,
+                "Challenge08: insufficient allowance"
+            );
             _allowances[tokenOwner][spender] = currentAllowance - value;
         }
     }
