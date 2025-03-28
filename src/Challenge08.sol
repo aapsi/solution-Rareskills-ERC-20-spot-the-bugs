@@ -144,10 +144,12 @@ contract Challenge08 {
     ) internal {
         uint256 currentAllowance = allowance(tokenOwner, spender);
         if (currentAllowance != type(uint256).max) {
-            require(
-                currentAllowance >= value,
-                "Challenge08: insufficient allowance"
-            );
+            if (currentAllowance < value)
+                revert ERC20InsufficientAllowance(
+                    spender,
+                    currentAllowance,
+                    value
+                );
             _allowances[tokenOwner][spender] = currentAllowance - value;
         }
     }
