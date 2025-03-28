@@ -1,0 +1,16 @@
+.env
+
+node_modules
+
+cache
+
+.DS_Store
+
+.vscode
+
+Icov.info
+
+coverage.json
+
+coverage.html
+
