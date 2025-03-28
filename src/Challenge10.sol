@@ -1,29 +1,35 @@
 // SPDX-License-Identifier: CC-BY-NC-SA-4.0
 
-/// ██████╗ ██╗  ██╗ █████╗ ██╗     ██╗     ███████╗███╗   ██╗ ██████╗ ███████╗    
-/// ██╔════╝██║  ██║██╔══██╗██║     ██║     ██╔════╝████╗  ██║██╔════╝ ██╔════╝    
-/// ██║     ███████║███████║██║     ██║     █████╗  ██╔██╗ ██║██║  ███╗█████╗      
-/// ██║     ██╔══██║██╔══██║██║     ██║     ██╔══╝  ██║╚██╗██║██║   ██║██╔══╝      
-/// ╚██████╗██║  ██║██║  ██║███████╗███████╗███████╗██║ ╚████║╚██████╔╝███████╗    
-/// ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    
-                                                                               
-///  ██╗ ██████╗                                                                   
-/// ███║██╔═████╗                                                                  
-/// ╚██║██║██╔██║                                                                  
-///  ██║████╔╝██║                                                                  
-///  ██║╚██████╔╝                                                                  
-///  ╚═╝ ╚═════╝                                                                   
-                                                                               
+/// ██████╗ ██╗  ██╗ █████╗ ██╗     ██╗     ███████╗███╗   ██╗ ██████╗ ███████╗
+/// ██╔════╝██║  ██║██╔══██╗██║     ██║     ██╔════╝████╗  ██║██╔════╝ ██╔════╝
+/// ██║     ███████║███████║██║     ██║     █████╗  ██╔██╗ ██║██║  ███╗█████╗
+/// ██║     ██╔══██║██╔══██║██║     ██║     ██╔══╝  ██║╚██╗██║██║   ██║██╔══╝
+/// ╚██████╗██║  ██║██║  ██║███████╗███████╗███████╗██║ ╚████║╚██████╔╝███████╗
+/// ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
+
+///  ██╗ ██████╗
+/// ███║██╔═████╗
+/// ╚██║██║██╔██║
+///  ██║████╔╝██║
+///  ██║╚██████╔╝
+///  ╚═╝ ╚═════╝
+
 pragma solidity ^0.8.20;
 
 /**
  * @title Challenge10
  */
 contract Challenge10 {
-
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
+    event OwnershipTransferred(
+        address indexed previousOwner,
+        address indexed newOwner
+    );
 
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -42,7 +48,7 @@ contract Challenge10 {
     }
 
     modifier onlyOwner() {
-        (msg.sender == owner, "Not owner");
+        require(msg.sender == owner, "Not owner");
         _;
     }
 
@@ -72,7 +78,10 @@ contract Challenge10 {
         return true;
     }
 
-    function allowance(address owner_, address spender) public view returns (uint256) {
+    function allowance(
+        address owner_,
+        address spender
+    ) public view returns (uint256) {
         return _allowances[owner_][spender];
     }
 
@@ -82,23 +91,36 @@ contract Challenge10 {
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 amount) public returns (bool) {
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public returns (bool) {
         address spender = msg.sender;
         _spendAllowance(from, spender, amount);
         _transfer(from, to, amount);
         return true;
     }
 
-    function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
+    function increaseAllowance(
+        address spender,
+        uint256 addedValue
+    ) public returns (bool) {
         address owner_ = msg.sender;
         _approve(owner_, spender, allowance(owner_, spender) + addedValue);
         return true;
     }
 
-    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
+    function decreaseAllowance(
+        address spender,
+        uint256 subtractedValue
+    ) public returns (bool) {
         address owner_ = msg.sender;
         uint256 currentAllowance = allowance(owner_, spender);
-        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
+        require(
+            currentAllowance >= subtractedValue,
+            "ERC20: decreased allowance below zero"
+        );
         unchecked {
             _approve(owner_, spender, currentAllowance - subtractedValue);
         }
@@ -114,7 +136,10 @@ contract Challenge10 {
     }
 
     function transferOwnership(address newOwner) public onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        require(
+            newOwner != address(0),
+            "Ownable: new owner is the zero address"
+        );
         _transferOwnership(newOwner);
     }
 
@@ -127,7 +152,10 @@ contract Challenge10 {
         require(to != address(0), "ERC20: transfer to the zero address");
 
         uint256 fromBalance = _balances[from];
-        require(fromBalance >= amount, "ERC20: transfer amount exceeds balance");
+        require(
+            fromBalance >= amount,
+            "ERC20: transfer amount exceeds balance"
+        );
         unchecked {
             _balances[from] = fromBalance - amount;
             _balances[to] += amount;
@@ -159,7 +187,11 @@ contract Challenge10 {
         emit Transfer(account, address(0), amount);
     }
 
-    function _approve(address owner_, address spender, uint256 amount) internal {
+    function _approve(
+        address owner_,
+        address spender,
+        uint256 amount
+    ) internal {
         require(owner_ != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
@@ -167,10 +199,17 @@ contract Challenge10 {
         emit Approval(owner_, spender, amount);
     }
 
-    function _spendAllowance(address tokenOwner, address spender, uint256 value) internal {
+    function _spendAllowance(
+        address tokenOwner,
+        address spender,
+        uint256 value
+    ) internal {
         uint256 currentAllowance = allowance(tokenOwner, spender);
         if (currentAllowance != type(uint256).max) {
-            require(currentAllowance >= value, "Challenge10: insufficient allowance");
+            require(
+                currentAllowance >= value,
+                "Challenge10: insufficient allowance"
+            );
             _allowances[tokenOwner][spender] = currentAllowance - value;
         }
     }
