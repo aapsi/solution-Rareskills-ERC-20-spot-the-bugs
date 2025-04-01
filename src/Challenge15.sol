@@ -1,27 +1,30 @@
 // SPDX-License-Identifier: CC-BY-NC-SA-4.0
 
-/// ██████╗ ██╗  ██╗ █████╗ ██╗     ██╗     ███████╗███╗   ██╗ ██████╗ ███████╗    
-/// ██╔════╝██║  ██║██╔══██╗██║     ██║     ██╔════╝████╗  ██║██╔════╝ ██╔════╝    
-/// ██║     ███████║███████║██║     ██║     █████╗  ██╔██╗ ██║██║  ███╗█████╗      
-/// ██║     ██╔══██║██╔══██║██║     ██║     ██╔══╝  ██║╚██╗██║██║   ██║██╔══╝      
-/// ╚██████╗██║  ██║██║  ██║███████╗███████╗███████╗██║ ╚████║╚██████╔╝███████╗    
-/// ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝    
-                                                                               
-///  ██╗███████╗                                                                   
-/// ███║██╔════╝                                                                   
-/// ╚██║███████╗                                                                   
-///  ██║╚════██║                                                                   
-///  ██║███████║                                                                   
-///  ╚═╝╚══════╝                                                                   
-                                                                               
+/// ██████╗ ██╗  ██╗ █████╗ ██╗     ██╗     ███████╗███╗   ██╗ ██████╗ ███████╗
+/// ██╔════╝██║  ██║██╔══██╗██║     ██║     ██╔════╝████╗  ██║██╔════╝ ██╔════╝
+/// ██║     ███████║███████║██║     ██║     █████╗  ██╔██╗ ██║██║  ███╗█████╗
+/// ██║     ██╔══██║██╔══██║██║     ██║     ██╔══╝  ██║╚██╗██║██║   ██║██╔══╝
+/// ╚██████╗██║  ██║██║  ██║███████╗███████╗███████╗██║ ╚████║╚██████╔╝███████╗
+/// ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
+
+///  ██╗███████╗
+/// ███║██╔════╝
+/// ╚██║███████╗
+///  ██║╚════██║
+///  ██║███████║
+///  ╚═╝╚══════╝
+
 pragma solidity >=0.8.0;
 
 /// @notice Modern and gas efficient ERC20
 contract Challenge15 {
-
     event Transfer(address indexed from, address indexed to, uint256 amount);
 
-    event Approval(address indexed owner, address indexed spender, uint256 amount);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 amount
+    );
 
     string public name;
 
@@ -41,7 +44,11 @@ contract Challenge15 {
         decimals = _decimals;
     }
 
-    function approve(address spender, uint256 amount) public virtual returns (bool) {
+    function approve(
+        address spender,
+        uint256 amount
+    ) public virtual returns (bool) {
+        require(spender != address(0), "Approve to zero address");
         allowance[msg.sender][spender] = amount;
 
         emit Approval(msg.sender, spender, amount);
@@ -49,7 +56,16 @@ contract Challenge15 {
         return true;
     }
 
-    function transfer(address to, uint256 amount) public virtual returns (bool) {
+    function transfer(
+        address to,
+        uint256 amount
+    ) public virtual returns (bool) {
+        require(to != address(0), "Transfer to zero address");
+        require(
+            balanceOf[msg.sender] >= amount,
+            "Transfer amount exceeds balance"
+        );
+
         balanceOf[msg.sender] -= amount;
 
         unchecked {
@@ -61,11 +77,20 @@ contract Challenge15 {
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {
-        uint256 allowed = allowance[from][msg.sender]; 
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public virtual returns (bool) {
+        require(to != address(0), "Transfer to zero address");
+        require(from != address(0), "Transfer from zero address");
+        uint256 allowed = allowance[from][msg.sender];
+        require(allowed >= amount, "Insufficient allowance");
 
-        if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed - amount;
+        if (allowed != type(uint256).max)
+            allowance[from][msg.sender] = allowed - amount;
 
+        require(balanceOf[from] >= amount, "Insufficient balance");
         balanceOf[from] -= amount;
 
         unchecked {
@@ -78,12 +103,19 @@ contract Challenge15 {
     }
 
     function _mint(address to, uint256 amount) internal virtual {
+        require(to != address(0), "Mint to zero address");
         totalSupply += amount;
+
+        unchecked {
+            balanceOf[to] += amount;
+        }
 
         emit Transfer(address(0), to, amount);
     }
 
     function _burn(address from, uint256 amount) internal virtual {
+        require(from != address(0), "Burn from zero address");
+        require(balanceOf[from] >= amount, "Burn amount exceeds balance");
         balanceOf[from] -= amount;
 
         unchecked {

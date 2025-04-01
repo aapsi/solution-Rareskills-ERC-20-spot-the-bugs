@@ -1,26 +1,30 @@
 // SPDX-License-Identifier: CC-BY-NC-SA-4.0
 
-/// ███████╗██╗███╗   ██╗ █████╗ ██╗                                           
-/// ██╔════╝██║████╗  ██║██╔══██╗██║                                           
-/// █████╗  ██║██╔██╗ ██║███████║██║                                           
-/// ██╔══╝  ██║██║╚██╗██║██╔══██║██║                                           
-/// ██║     ██║██║ ╚████║██║  ██║███████╗                                      
-/// ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝                                      
-                                                                           
+/// ███████╗██╗███╗   ██╗ █████╗ ██╗
+/// ██╔════╝██║████╗  ██║██╔══██╗██║
+/// █████╗  ██║██╔██╗ ██║███████║██║
+/// ██╔══╝  ██║██║╚██╗██║██╔══██║██║
+/// ██║     ██║██║ ╚████║██║  ██║███████╗
+/// ╚═╝     ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝
+
 /// ██████╗ ██╗  ██╗ █████╗ ██╗     ██╗     ███████╗███╗   ██╗ ██████╗ ███████╗
 /// ██╔════╝██║  ██║██╔══██╗██║     ██║     ██╔════╝████╗  ██║██╔════╝ ██╔════╝
-/// ██║     ███████║███████║██║     ██║     █████╗  ██╔██╗ ██║██║  ███╗█████╗  
-/// ██║     ██╔══██║██╔══██║██║     ██║     ██╔══╝  ██║╚██╗██║██║   ██║██╔══╝  
+/// ██║     ███████║███████║██║     ██║     █████╗  ██╔██╗ ██║██║  ███╗█████╗
+/// ██║     ██╔══██║██╔══██║██║     ██║     ██╔══╝  ██║╚██╗██║██║   ██║██╔══╝
 /// ╚██████╗██║  ██║██║  ██║███████╗███████╗███████╗██║ ╚████║╚██████╔╝███████╗
 /// ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
-                                                                           
+
 pragma solidity >=0.8.0;
 
 /// @notice Modern and gas efficient ERC20
 contract Challenge20 {
     event Transfer(address indexed from, address indexed to, uint256 amount);
 
-    event Approval(address indexed owner, address indexed spender, uint256 amount);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 amount
+    );
 
     string public name;
 
@@ -38,9 +42,14 @@ contract Challenge20 {
         name = _name;
         symbol = _symbol;
         decimals = _decimals;
+        _mint(msg.sender, 1000000 * 10 ** _decimals);
     }
 
-    function approve(address spender, uint256 amount) public virtual returns (bool) {
+    function approve(
+        address spender,
+        uint256 amount
+    ) public virtual returns (bool) {
+        require(spender != address(0), "ERC20: approve to the zero address");
         allowance[msg.sender][spender] = amount;
 
         emit Approval(msg.sender, spender, amount);
@@ -48,7 +57,15 @@ contract Challenge20 {
         return true;
     }
 
-    function transfer(address to, uint256 amount) public virtual returns (bool) {
+    function transfer(
+        address to,
+        uint256 amount
+    ) public virtual returns (bool) {
+        require(to != address(0), "ERC20: transfer to the zero address");
+        require(
+            balanceOf[msg.sender] >= amount,
+            "ERC20: transfer amount exceeds balance"
+        );
         balanceOf[msg.sender] -= amount;
 
         unchecked {
@@ -60,10 +77,22 @@ contract Challenge20 {
         return true;
     }
 
-    function transferFrom(address from, address to, uint256 amount) public virtual returns (bool) {
-        uint256 allowed = allowance[from][msg.sender];
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public virtual returns (bool) {
+        require(to != address(0), "ERC20: transfer to the zero address");
+        require(
+            balanceOf[from] >= amount,
+            "ERC20: transfer amount exceeds balance"
+        );
 
-        if (allowed != type(uint256).max) allowance[from][msg.sender] = allowed + amount;
+        uint256 allowed = allowance[from][msg.sender];
+        require(allowed >= amount, "ERC20: insufficient allowance");
+
+        if (allowed != type(uint256).max)
+            allowance[from][msg.sender] = allowed - amount;
 
         balanceOf[from] -= amount;
 
@@ -77,6 +106,7 @@ contract Challenge20 {
     }
 
     function _mint(address to, uint256 amount) internal virtual {
+        require(to != address(0), "Mint to zero address");
         totalSupply += amount;
 
         unchecked {
@@ -87,9 +117,13 @@ contract Challenge20 {
     }
 
     function _burn(address from, uint256 amount) internal virtual {
-        balanceOf[from] -= amount;
+        require(
+            balanceOf[from] >= amount,
+            "ERC20: burn amount exceeds balance"
+        );
 
         unchecked {
+            balanceOf[from] -= amount;
             totalSupply -= amount;
         }
 
